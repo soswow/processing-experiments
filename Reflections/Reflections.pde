@@ -5,7 +5,7 @@ MovablePoint currentlyMovingPoint;
 int w = 500;
 int h = 500;
 void setup() {
-  size(w, h);
+  size(500, 500);
   movablePoints = new ArrayList<MovablePoint>();
   for(int i=0; i<10; i++) {
     new MovablePoint(new PVector(random(0,w), random(0,h))); 
@@ -18,7 +18,6 @@ void mouseDragged(){
 }
 
 void draw() {
-  clear();
   background(255);
   line(30, 300, 350, 300);
 
