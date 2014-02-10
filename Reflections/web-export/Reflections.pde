@@ -9,7 +9,8 @@ void setup() {
   movables = new ArrayList<Movable>();
   drawables = new ArrayList<Drawable>();
   for(int i=0; i<10; i++) {
-    new MovableLine(
+    new MovableTriangle(
+      new MovablePoint(new PVector(random(0,w), random(0,h))),
       new MovablePoint(new PVector(random(0,w), random(0,h))),
       new MovablePoint(new PVector(random(0,w), random(0,h)))); 
   }
@@ -39,20 +40,32 @@ void draw() {
   background(255);
   line(30, 300, 350, 300);
 
-  for (int i = 0; i < drawables.size(); i++) 
-    drawables.get(i).draw();
+  for (int i = 0; i < drawables.size(); i++)
+    if(!drawables.get(i).getSkipAutoDrawing()) 
+      drawables.get(i).draw();
 }
-
-interface Drawable {
-  Integer getZIndex();
-  void draw();
+class MovableLine implements Drawable {
+  MovablePoint p1;
+  MovablePoint p2;
+  
+  public MovableLine(MovablePoint p1, MovablePoint p2){
+    this.p1 = p1;
+    this.p2 = p2;
+    this.p1.skipAutoDrawing = true;
+    this.p2.skipAutoDrawing = true;
+    registerDrawable(this);
+  }
+  
+  boolean getSkipAutoDrawing(){ return false;}
+  Integer getZIndex(){ return 10;}
+  
+  public void draw() {
+    stroke(0);
+    p1.draw();
+    p2.draw();
+    line(p1.p.x, p1.p.y, p2.p.x, p2.p.y);
+  } 
 }
-
-interface Movable {
-  void onDragged();
-  boolean isDragged();
-}
-
 class MovablePoint implements Movable, Drawable {
   float hoverDistance = 10;
   int bigSize = 10;
@@ -60,7 +73,10 @@ class MovablePoint implements Movable, Drawable {
   int smallColor = 200;
   int bigColor = 30;
   
-  Integer getZIndex(){ return 1;}
+  public boolean skipAutoDrawing = false;
+  
+  boolean getSkipAutoDrawing(){ return skipAutoDrawing;}
+  Integer getZIndex(){ return 30;}
   
   public PVector p;
   public boolean hovered = false;
@@ -103,25 +119,41 @@ class MovablePoint implements Movable, Drawable {
     noFill();
   }
 }
-
-class MovableLine implements Drawable {
+class MovableTriangle implements Drawable {
   MovablePoint p1;
   MovablePoint p2;
+  MovablePoint p3;
   
-  public MovableLine(MovablePoint p1, MovablePoint p2){
+  public MovableTriangle(MovablePoint p1, MovablePoint p2, MovablePoint p3){
     this.p1 = p1;
     this.p2 = p2;
+    this.p3 = p3;
+    this.p1.skipAutoDrawing = true;
+    this.p2.skipAutoDrawing = true;
+    this.p3.skipAutoDrawing = true;
     registerDrawable(this);
   }
   
-  Integer getZIndex(){ return 0;}
+  boolean getSkipAutoDrawing(){ return false;}
+  Integer getZIndex(){ return 20;}
   
   public void draw() {
     stroke(0);
-    line(p1.p.x, p1.p.y, p2.p.x, p2.p.y);
-  } 
+    fill(100, 50, 50, 150);
+    triangle(p1.p.x, p1.p.y, p2.p.x, p2.p.y, p3.p.x, p3.p.y);
+    p1.draw();
+    p2.draw();
+    p3.draw();
+  }
+}
+interface Drawable {
+  boolean getSkipAutoDrawing();
+  Integer getZIndex();
+  void draw();
 }
 
-
-
+interface Movable {
+  void onDragged();
+  boolean isDragged();
+}
 
