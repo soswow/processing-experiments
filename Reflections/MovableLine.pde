@@ -2,7 +2,7 @@ class MovableLine implements Drawable {
   MovablePoint p1;
   MovablePoint p2;
   
-  public MovableLine(MovablePoint p1, MovablePoint p2){
+  public MovableLine(MovablePoint p1, MovablePoint p2) {
     this.p1 = p1;
     this.p2 = p2;
     this.p1.skipAutoDrawing = true;
@@ -18,5 +18,5 @@ class MovableLine implements Drawable {
     p1.draw();
     p2.draw();
     line(p1.p.x, p1.p.y, p2.p.x, p2.p.y);
-  } 
+  }
 }

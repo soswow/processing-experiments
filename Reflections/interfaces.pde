@@ -5,6 +5,7 @@ interface Drawable {
 }
 
 interface Movable {
+  boolean isLocked();
   void onDragged();
   boolean isDragged();
 }

@@ -12,11 +12,20 @@ class MovablePoint implements Movable, Drawable {
   
   public PVector p;
   public boolean hovered = false;
+  public boolean locked = false;
+  
+  public boolean isLocked() {return locked;}
   
   public MovablePoint(PVector point){
     this.p = point;
     registerDrawable(this);
     registerMovable(this);
+  }
+  
+  public PVector getSecondPoint(float slope, float len) {
+    float dx = len / sqrt(1 + sq(slope));
+    float dy = dx * slope;
+    return new PVector(p.x + dx, p.y + dy);
   }
   
   public boolean isDragged() { return hovered; }
