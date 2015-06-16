@@ -1,24 +1,19 @@
 import controlP5.*;
 
-import processing.net.*;
-Server myServer;
-
-// Starts a myServer on port 5204
-
-
 int w = 800;
-int h = 800;
+int h = 600;
 int step = 5;
 float diag = sqrt(w*w+h*h);
 
+L line = new L(new P(30, 70), new P(400, 350));
+P lo = new P(0, 0);
+P ro = new P(w, 0);
+
 ControlP5 cp5;
-RadioButton radioButtons;
 
 void setup() {
   size(w, h);
-  background(255); 
-  myDraw();
-  
+   
   cp5 = new ControlP5(this);
   
   cp5.addSlider("step")
@@ -27,112 +22,20 @@ void setup() {
      .setValue(40)
      .setColorCaptionLabel(color(0, 0, 0))
      .setColorValueLabel(color(0,0,0));
+  
   cp5.getController("step").getValueLabel().align(ControlP5.LEFT, ControlP5.BOTTOM_OUTSIDE).setPaddingX(0);
-  
-  myServer = new Server(this, 5050);
-//  radioButtons = addRadioButton("radioButton")
-//         .setPosition(20,160)
-//         .setSize(40,20)
-//         .setColorForeground(color(120))
-//         .setColorActive(color(255))
-//         .setColorLabel(color(255))
-//         .setItemsPerRow(5)
-//         .setSpacingColumn(50)
-//         .addItem("50",1)
-//         .addItem("100",2)
-//         .addItem("150",3)
-//         .addItem("200",4)
-//         .addItem("250",5).addItem("50",1)
-//         .addItem("100",2)
-//         .addItem("150",3)
-//         .addItem("200",4)
-//         .addItem("250",5); 
 }
 
-void radioButton(int a) {
-  println("a radio Button event: "+a);
+void draw() {
+  myDraw();
 }
 
-class P{
-  float x;
-  float y;
-  P(int x, int y){
-    this.x = x;
-    this.y = y;
-  }
-  P(float x, float y){
-    this.x = x;
-    this.y = y;
-  }
-  P(P p){
-    this.x = p.x;
-    this.y = p.y;
-  }
-  
-  float distTo(P p){
-    return dist(this.x, this.y, p.x, p.y);
-  }
-  float distTo(float x, float y){
-    return dist(this.x, this.y, x, y);
-  }
-  void lineTo(P p){
-    line(this.x, this.y, p.x, p.y);
-  }
-  void circle(float r){
-    ellipse(round(this.x), round(this.y), round(r * 2), round(r * 2));
-  }
-  boolean isSameAs(P p){
-    return this.x == p.x && this.y == p.y;
-  }
-  void drawPoint(){
-    point(this.x, this.y);
-  }
+void mousePressed() {
+  line = new L(new P(mouseX, mouseY), line.end);
 }
 
-class Position {
-  float left;
-  float right;
-  int leftSteps;
-  int rightSteps;
-  P point = null;
-  P perp = null;
-  float dist = -1;
-  boolean skip = false;
-  
-  Position(int leftSteps, int rightSteps){
-    this.leftSteps = leftSteps;
-    this.rightSteps = rightSteps;
-    
-    this.left = leftSteps * step;
-    this.right = rightSteps * step;
-    
-//    this.point = getPoint();
-  }
-  
-  private float triangleHeight(float a, float b, float c){
-    return sqrt((a + b - c) * (a - b + c) * (b + c - a) * (a + b + c)) / (c * 2);
-  }
-  
-  P getPoint(){
-    if(this.point == null){
-      float y = this.triangleHeight(this.left, this.right, w);
-      float x = sqrt(sq(this.left) - sq(y));
-      this.point = new P(x, y);
-    }
-    return this.point;
-  }
-  
-  P getPerpendicularPoint(L line){
-    if(this.perp == null) {
-      this.perp = line.perpendicularFrom(this.getPoint());
-      this.dist = this.perp.distTo(this.getPoint()); 
-    }
-    return this.perp;
-  }
-  
-  boolean isSameAs(Position position){
-    return this.left == position.left && this.right == position.right;
-  }
+void mouseDragged() {
+  line = new L(line.start, new P(mouseX, mouseY));
 }
 
 Position getClosestPosition(P p){
@@ -143,55 +46,20 @@ Position getClosestPosition(P p){
   return new Position(lSteps, rSteps);
 }
 
-class L{
-  P start;
-  P end;
-  float length;
-  float m;
-  float b;
-  
-  L(P start, P end) {
-    this.start = start;
-    this.end = end;
-    this.length = start.distTo(end);
-    this.m = (start.y - end.y) / (start.x - end.x);
-    this.b = (end.x * start.y - start.x * end.y) / (end.x - start.x);
-  }
-  
-  P pointAtPercent(float p){
-    float x = this.start.x + (this.end.x - this.start.x) * p;
-    float y = this.start.y + (this.end.y - this.start.y) * p;
-    return new P(x, y);
-  }
-  
-  void draw(){
-    this.start.lineTo(this.end);
-  }
-  
-  P perpendicularFrom(P ref){
-    float perpM = -1 / this.m;
-    float perpB = (perpM * - 1 * ref.x) + ref.y;
-    float x = (this.b - perpB) / (perpM - this.m); 
-    float y = this.m * x + this.b;
-    return new P(x, y);
-  }
-}
-
-L line = new L(new P(30, 70), new P(400, 350));
-P lo = new P(0, 0);
-P ro = new P(w, 0);
-
-
 void myDraw(){
   clear();
   stroke(150,150,150);
   strokeWeight(1);
   background(255);
   noFill();
+  
+  // Draw latice
   for(int i=0; i < diag * 2; i=i+step*2){
     lo.circle(i / 2);
     ro.circle(i / 2);
   }
+  
+  // Draw radiuses crossing in the closest intersaction
   Position position;
   if(!mousePressed){
     position = getClosestPosition(new P(mouseX, mouseY));
@@ -204,37 +72,48 @@ void myDraw(){
     ro.lineTo(position.getPoint());
   }
   
+  // Draw target line
   strokeWeight(2);
   stroke(150, 150, 255);
   line.draw();
   
   int lineDist = ceil(line.length);
 
+  //Getting list of positions to draw approximation to this line
   ArrayList<Position> positions = new ArrayList<Position>();
-  for(int i=0; i < lineDist; i++){
-    float p = float(i) / float(lineDist);
-    P samplePoint = line.pointAtPercent(p);
+  // Go through each pixel of current line
+  for(int i=0; i < lineDist; i++) {
+    float percent = float(i) / float(lineDist);
+    P samplePoint = line.pointAtPercent(percent);
     position = getClosestPosition(samplePoint);
-    if(i == 0 || !position.isSameAs(positions.get(positions.size()-1))){
+    boolean sameAsLastPoint = i > 0 && position.isSameAs(positions.get(positions.size() - 1));
+    if(i == 0 || !sameAsLastPoint){
       positions.add(position);
     }
   }
-   
-  for(int i=0; i < positions.size(); i++){
-    Position pos = positions.get(i);
+  
+  // Draw small perpendicular lines, to show an error
+  for(Position pos: positions){
     P perp = pos.getPerpendicularPoint(line);
     strokeWeight(1);
     stroke(255,20,20);
     perp.lineTo(pos.getPoint());
   }
   
+  /*
+   At this point "positions" includes one position per grid cell. 
+   This means traverse line made of this points goes alonge grid lines and never diagonaly.
+   This part removes all the unnesessery points, so: 
+   1) line is continious and you still can go through all point gradually turning wheel 
+      (but now there will be times when two wheel should be turned at the same time)
+   2) points that has been left are optimal, meaning the error from the target line is minimum
+   */ 
   boolean gogo = true;
-  while(gogo){
+  while(gogo) {
     float max = -1;
     int maxIndex = -1;
-//    boolean valid = true;
-    //From second to pre-last
-    for(int i = 1; i < positions.size() - 1; i++){
+
+    for (int i = 1; i < positions.size() - 1; i++) {
       Position prev = positions.get(i-1);
       Position curr = positions.get(i);
       Position next = positions.get(i + 1);
@@ -247,6 +126,7 @@ void myDraw(){
         maxIndex = i;
       }
     }
+    
     if(maxIndex != -1){
       positions.get(maxIndex).skip = true;
       gogo = true;  
@@ -255,42 +135,31 @@ void myDraw(){
     }
   }
   
-  for(int i=0; i < positions.size(); i++){
-    stroke(100,255,100);
-    strokeWeight(8);
+  for (int i=0; i < positions.size(); i++) {
     position = positions.get(i);
     P p = position.getPoint();
-    if(position.skip){
-      stroke(250,255,100);
-      strokeWeight(6);
-      p.drawPoint();
-      continue;
-    }
-    
-    strokeWeight(3);
-    if(i > 0){
-      Position prev = positions.get(i - 1);
-      if(prev.skip){
-        prev = positions.get(i - 2);
+    if(!position.skip){
+      stroke(100,255,100);
+      strokeWeight(3);
+      if (i > 0) {
+        Position prev = positions.get(i - 1);
+        if (prev.skip) {
+          prev = positions.get(i - 2);
+        }
+        p.lineTo(prev.getPoint());
       }
-      p.lineTo(prev.getPoint());
     }
   }
   
-  if(myServer!=null)
-    myServer.write("hello");
+  for (int i=0; i < positions.size(); i++) {
+    position = positions.get(i);
+    P p = position.getPoint();
+    if (position.skip) {
+      stroke(250,255,100);
+      strokeWeight(6);
+      p.drawPoint();
+    }
+  }
+  
+  
 }
-
-void mousePressed() {
-  line = new L(new P(mouseX, mouseY), line.end);
-}
-
-void mouseDragged() {
-  line = new L(line.start, new P(mouseX, mouseY));
-}
-
-void draw() {
-  myDraw();
-}
-
-
