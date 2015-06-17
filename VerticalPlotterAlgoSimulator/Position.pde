@@ -30,6 +30,7 @@ class Position {
   }
   
   P getPerpendicularPoint(L line){
+    // Oh, bad bad Developer, setting state in get method! Learn your lesson!
     if(this.perp == null) {
       this.perp = line.perpendicularFrom(this.getPoint());
       this.dist = this.perp.distTo(this.getPoint()); 
